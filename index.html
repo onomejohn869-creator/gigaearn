@@ -487,14 +487,15 @@
     updateDisplays();
 
     function updateDisplays() {
-      // 100 Shards = $0.010 USDT
-      const usdtVal = (balance * 0.0001).toFixed(3);
-      
-      document.getElementById('balanceDisplay').innerText = balance;
-      document.getElementById('usdtDisplay').innerText = usdtVal;
-      document.getElementById('accountShards').innerText = `${balance} Shards ($${usdtVal} USDT)`;
-      localStorage.setItem('user_balance', balance);
-    }
+  // 50/50 Split Rate: 25,000 Shards = $1.000 USDT (Each +25 Shards = $0.001 USDT user reward)
+  const usdtVal = (balance / 25000).toFixed(3);
+  
+  document.getElementById('balanceDisplay').innerText = balance;
+  document.getElementById('usdtDisplay').innerText = usdtVal;
+  document.getElementById('accountShards').innerText = `${balance} Shards ($${usdtVal} USDT)`;
+  localStorage.setItem('user_balance', balance);
+}
+
 
     // Tab Switcher
     function switchTab(tabName) {
