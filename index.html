@@ -292,7 +292,7 @@
       background: #121325;
       border-top: 1px solid var(--card-border);
       display: flex;
-      justify-content: space-around;
+      justify-style: space-around;
       align-items: center;
       padding: 10px 0 16px 0;
       z-index: 90;
@@ -334,6 +334,12 @@
   </style>
 </head>
 <body>
+
+  <!-- 5-Minute Active Bonus Banner (Hidden by Default) -->
+  <div id="topBanner" style="display:none; background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 12px 16px; border-radius: 16px; text-align: center; margin-bottom: 16px; font-weight: 700; font-size: 13px; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);">
+    ⏱️ 5-Min Active Bonus Ready!
+    <button onclick="claimBannerBonus()" style="background: white; color: #d97706; border: none; padding: 6px 12px; border-radius: 8px; font-weight: 800; font-size: 12px; margin-left: 8px; cursor: pointer;">Claim +50 Shards</button>
+  </div>
 
   <!-- Top Profile Header -->
   <div class="top-bar">
@@ -556,6 +562,30 @@
         alert("🎉 Premium Task Complete! You earned +150 Shards.");
       }).catch((err) => {
         alert("Task ad was closed or unavailable. Try again.");
+      });
+    }
+
+    // 5-Minute Timer Top Banner Logic
+    setTimeout(() => {
+      const banner = document.getElementById('topBanner');
+      if (banner) {
+        banner.style.display = 'block';
+      }
+    }, 5 * 60 * 1000);
+
+    function claimBannerBonus() {
+      if (!InterstitialAd) {
+        alert("Ad network is loading. Please try again in a moment.");
+        return;
+      }
+
+      InterstitialAd.show().then((res) => {
+        balance += 50;
+        updateDisplays();
+        document.getElementById('topBanner').style.display = 'none';
+        alert("🎉 Awesome! You claimed your +50 Shards 5-Minute Bonus!");
+      }).catch((err) => {
+        alert("Ad was closed or skipped. Try again to claim bonus.");
       });
     }
 
