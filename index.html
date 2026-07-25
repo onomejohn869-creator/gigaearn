@@ -358,7 +358,7 @@
       <div class="balance-val">
         <span id="balanceDisplay">100</span> <span style="font-size:20px; color:var(--accent-purple);">Shards</span>
       </div>
-      <div class="usdt-value">≈ $<span id="usdtDisplay">0.010</span> USDT</div>
+      <div class="usdt-value">≈ $<span id="usdtDisplay">0.004</span> USDT</div>
     </div>
 
     <!-- Quick Buttons -->
@@ -371,7 +371,7 @@
     <div class="special-card">
       <span class="special-badge">⭐ Special</span>
       <div class="special-title">🌟 Premium Task</div>
-      <div class="special-sub">Complete promotional tasks to earn high rewards</div>
+      <div class="special-sub">Watch high-value interstitial ad for bonus shards</div>
       <div class="special-reward">Earn +150 Shards</div>
       <button class="btn-sm" style="float: right;" onclick="claimSpecial()">Start Task</button>
     </div>
@@ -442,7 +442,7 @@
   <div id="withdrawModal" class="modal">
     <div class="modal-content">
       <div class="modal-title">💳 Withdraw Funds</div>
-      <p style="font-size:12px; color:var(--text-muted);">Minimum withdrawal: 1,000 Shards ($0.10 USDT)</p>
+      <p style="font-size:12px; color:var(--text-muted);">Minimum withdrawal: 25,000 Shards ($1.00 USDT)</p>
       
       <input type="text" class="input-box" id="walletInput" placeholder="Enter TON or USDT Address">
       
@@ -482,20 +482,18 @@
     tg.ready();
     tg.expand();
 
-    // 2. Load Shards Balance & Calculate USDT Equivalent
+    // 2. Load Shards Balance & Calculate 50/50 USDT Rate (25,000 Shards = $1.00 USDT)
     let balance = parseInt(localStorage.getItem('user_balance')) || 100;
     updateDisplays();
 
     function updateDisplays() {
-  // 50/50 Split Rate: 25,000 Shards = $1.000 USDT (Each +25 Shards = $0.001 USDT user reward)
-  const usdtVal = (balance / 25000).toFixed(3);
-  
-  document.getElementById('balanceDisplay').innerText = balance;
-  document.getElementById('usdtDisplay').innerText = usdtVal;
-  document.getElementById('accountShards').innerText = `${balance} Shards ($${usdtVal} USDT)`;
-  localStorage.setItem('user_balance', balance);
-}
-
+      const usdtVal = (balance / 25000).toFixed(3);
+      
+      document.getElementById('balanceDisplay').innerText = balance;
+      document.getElementById('usdtDisplay').innerText = usdtVal;
+      document.getElementById('accountShards').innerText = `${balance} Shards ($${usdtVal} USDT)`;
+      localStorage.setItem('user_balance', balance);
+    }
 
     // Tab Switcher
     function switchTab(tabName) {
@@ -523,38 +521,41 @@
       alert("Success! You claimed +50 Shards.");
     }
 
-        // Special Task Function (Triggers an ad before rewarding +150 Shards)
-    function claimSpecial() {
-      if (!AdController) {
+    // Initialize Adsgram Controllers
+    // Block 39761 = Rewarded Ad (+25 Shards)
+    const RewardedAd = window.Adsgram ? window.Adsgram.init({ blockId: "39761" }) : null;
+    // Block 39774 = Interstitial Ad (+150 Shards)
+    const InterstitialAd = window.Adsgram ? window.Adsgram.init({ blockId: "39774" }) : null;
+
+    // Standard Watch Video Ad (+25 Shards)
+    function watchAd() {
+      if (!RewardedAd) {
         alert("Ad network is loading or unavailable. Please try again in a moment.");
         return;
       }
 
-      // Show Adsgram ad for the premium task
-      AdController.show().then((res) => {
-        balance += 150;
+      RewardedAd.show().then((res) => {
+        balance += 25;
         updateDisplays();
-        alert("Premium Task Complete! You earned +150 Shards.");
+        alert("Awesome! You completed the ad and earned +25 Shards.");
       }).catch((err) => {
-        alert("Ad was skipped or failed. Task incomplete, no reward granted.");
+        alert("Ad skipped or unavailable. No reward granted.");
       });
     }
 
-
-    // Adsgram Ad Call
-    const AdController = window.Adsgram ? window.Adsgram.init({ blockId: "39761" }) : null;
-
-    function watchAd() {
-      if (!AdController) {
-        alert("Ad network is loading or unavailable. Please try again in a moment.");
+    // Premium Task Interstitial Ad (+150 Shards)
+    function claimSpecial() {
+      if (!InterstitialAd) {
+        alert("Premium task ad is loading. Please try again in a moment.");
         return;
       }
-      AdController.show().then((res) => {
-        balance += 25;
+
+      InterstitialAd.show().then((res) => {
+        balance += 150;
         updateDisplays();
-        alert("Success! +25 Shards earned.");
+        alert("🎉 Premium Task Complete! You earned +150 Shards.");
       }).catch((err) => {
-        alert("Ad was skipped or unavailable.");
+        alert("Task ad was closed or unavailable. Try again.");
       });
     }
 
@@ -589,8 +590,8 @@
         alert("Please enter a valid wallet address.");
         return;
       }
-      if (balance < 1000) {
-        alert("Insufficient balance. Minimum withdrawal is 1,000 Shards.");
+      if (balance < 25000) {
+        alert("Insufficient balance. Minimum withdrawal is 25,000 Shards ($1.00 USDT).");
         return;
       }
       alert(`Withdrawal request of ${balance} Shards submitted for wallet: ${addr}`);
