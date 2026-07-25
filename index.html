@@ -2,22 +2,24 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>GigaEarn MiniApp</title>
   
   <!-- Telegram Web App SDK -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  
   <!-- Adsgram SDK -->
   <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
 
   <style>
     :root {
-      --bg-color: #0f172a;
-      --card-bg: #1e293b;
+      --bg-color: #0b0c1b;
+      --card-bg: #15172c;
+      --card-border: rgba(255, 255, 255, 0.08);
+      --accent-purple: #8b5cf6;
+      --accent-pink: #ec4899;
       --accent-green: #10b981;
-      --accent-blue: #3b82f6;
-      --text-main: #f8fafc;
+      --accent-yellow: #f59e0b;
+      --text-main: #ffffff;
       --text-muted: #94a3b8;
     }
 
@@ -25,136 +27,452 @@
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      user-select: none;
     }
 
     body {
       background-color: var(--bg-color);
       color: var(--text-main);
-      padding: 16px;
+      padding: 16px 16px 90px 16px;
+      min-height: 100vh;
+    }
+
+    /* Top Profile Bar */
+    .top-bar {
       display: flex;
-      flex-direction: column;
-      gap: 16px;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
     }
 
-    .card {
-      background-color: var(--card-bg);
-      border-radius: 12px;
-      padding: 16px;
+    .brand-info {
       display: flex;
-      flex-direction: column;
-      gap: 12px;
+      align-items: center;
+      gap: 10px;
     }
 
-    .balance-card {
-      background: linear-gradient(135deg, #4f46e5, #9333ea);
-      text-align: center;
-      padding: 24px 16px;
+    .gem-icon {
+      font-size: 24px;
     }
 
-    .balance-title {
+    .brand-title {
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .brand-handle {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .status-badge {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--accent-green);
       font-size: 12px;
-      letter-spacing: 1px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      background-color: var(--accent-green);
+      border-radius: 50%;
+    }
+
+    /* Main Balance Card */
+    .balance-card {
+      background: linear-gradient(135deg, #1b1d3a 0%, #121427 100%);
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      border-radius: 20px;
+      padding: 20px;
+      position: relative;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      margin-bottom: 16px;
+    }
+
+    .balance-label {
+      font-size: 11px;
+      letter-spacing: 1.2px;
+      color: var(--text-muted);
       text-transform: uppercase;
-      opacity: 0.8;
+      font-weight: 700;
     }
 
-    .balance-text {
-      font-size: 32px;
-      font-weight: bold;
-      margin-top: 4px;
-    }
-
-    .section-title {
-      font-size: 16px;
-      font-weight: bold;
+    .balance-val {
+      font-size: 38px;
+      font-weight: 900;
+      margin: 4px 0;
       display: flex;
       align-items: center;
       gap: 8px;
     }
 
-    .action-row {
+    .usdt-value {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--accent-green);
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 8px;
+      display: inline-block;
+    }
+
+    /* Quick Action Buttons */
+    .action-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .act-btn {
+      padding: 14px;
+      border-radius: 14px;
+      border: none;
+      font-weight: 700;
+      font-size: 15px;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    }
+
+    .act-btn-purple {
+      background: linear-gradient(135deg, #8b5cf6, #6366f1);
+    }
+
+    .act-btn-dark {
+      background: #1e203e;
+      border: 1px solid var(--card-border);
+    }
+
+    /* Special Task Banner */
+    .special-card {
+      background: linear-gradient(135deg, #2a1b40 0%, #18152e 100%);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      border-radius: 20px;
+      padding: 18px;
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    .special-badge {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      background: rgba(245, 158, 11, 0.2);
+      color: var(--accent-yellow);
+      border: 1px solid var(--accent-yellow);
+      font-size: 10px;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 6px;
+      text-transform: uppercase;
+    }
+
+    .special-title {
+      font-size: 16px;
+      font-weight: 800;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .special-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    .special-reward {
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--accent-yellow);
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    /* Generic Section Cards */
+    .section-head {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .task-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 10px;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
 
-    .action-info h4 {
+    .task-info h4 {
       font-size: 15px;
+      font-weight: 700;
     }
 
-    .action-info p {
+    .task-info p {
       font-size: 12px;
       color: var(--text-muted);
     }
 
-    .reward-text {
-      color: var(--accent-green);
-      font-size: 13px;
-      font-weight: 600;
-    }
-
-    .btn {
-      background-color: var(--accent-blue);
-      color: white;
+    .btn-sm {
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
       border: none;
+      color: white;
       padding: 8px 16px;
-      border-radius: 8px;
-      font-weight: bold;
-      font-size: 14px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 13px;
       cursor: pointer;
     }
 
-    .btn:disabled {
-      background-color: #475569;
-      color: #94a3b8;
-      cursor: not-allowed;
+    /* Modal Styling for Withdrawal / Referral */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(8px);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
     }
+
+    .modal-content {
+      background: #181a33;
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 24px;
+      width: 100%;
+      max-width: 360px;
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 800;
+      margin-bottom: 12px;
+    }
+
+    .input-box {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid var(--card-border);
+      background: #0d0e1d;
+      color: white;
+      margin: 10px 0 16px 0;
+    }
+
+    /* Bottom Navigation Bar */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: #121325;
+      border-top: 1px solid var(--card-border);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 10px 0 16px 0;
+      z-index: 90;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      font-size: 10px;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+
+    .nav-item.active {
+      color: var(--accent-purple);
+    }
+
+    .nav-icon {
+      font-size: 20px;
+    }
+
+    .play-tab {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      margin-top: -25px;
+      box-shadow: 0 4px 15px rgba(245, 158, 11, 0.5);
+    }
+
+    .page { display: none; }
+    .page.active { display: block; }
   </style>
 </head>
 <body>
 
-  <!-- Balance Section -->
-  <div class="card balance-card">
-    <div class="balance-title">Total Balance</div>
-    <div class="balance-text" id="balanceDisplay">100 Shards</div>
-  </div>
-
-  <!-- Daily Bonus -->
-  <div class="section-title">⚡ Daily Bonus</div>
-  <div class="card">
-    <div class="action-row">
-      <div class="action-info">
-        <h4>Daily Check-In</h4>
-        <div class="reward-text">+50 Shards</div>
+  <!-- Top Profile Header -->
+  <div class="top-bar">
+    <div class="brand-info">
+      <span class="gem-icon">💎</span>
+      <div>
+        <div class="brand-title">GigaEarn</div>
+        <div class="brand-handle">@Watch2EarnHub_bot</div>
       </div>
-      <button class="btn" id="checkInBtn" onclick="claimDaily()">Check In</button>
+    </div>
+    <div class="status-badge">
+      <span class="status-dot"></span> Online
     </div>
   </div>
 
-  <!-- Watch & Earn -->
-  <div class="section-title">🎬 Watch & Earn</div>
-  <div class="card">
-    <div class="action-row">
-      <div class="action-info">
+  <!-- PAGE 1: HOME -->
+  <div id="page-home" class="page active">
+    
+    <!-- Balance Header -->
+    <div class="balance-card">
+      <div class="balance-label">Your Balance</div>
+      <div class="balance-val">
+        <span id="balanceDisplay">100</span> <span style="font-size:20px; color:var(--accent-purple);">Shards</span>
+      </div>
+      <div class="usdt-value">≈ $<span id="usdtDisplay">0.010</span> USDT</div>
+    </div>
+
+    <!-- Quick Buttons -->
+    <div class="action-grid">
+      <button class="act-btn act-btn-purple" onclick="switchTab('earn')">⚡ Earn</button>
+      <button class="act-btn act-btn-dark" onclick="openWithdrawModal()">💳 Withdraw</button>
+    </div>
+
+    <!-- Special Task Banner -->
+    <div class="special-card">
+      <span class="special-badge">⭐ Special</span>
+      <div class="special-title">🌟 Premium Task</div>
+      <div class="special-sub">Complete promotional tasks to earn high rewards</div>
+      <div class="special-reward">Earn +150 Shards</div>
+      <button class="btn-sm" style="float: right;" onclick="claimSpecial()">Start Task</button>
+    </div>
+
+    <!-- Watch Ads Section -->
+    <div class="section-head">🎬 Watch Ads & Earn</div>
+    <div class="task-card">
+      <div class="task-info">
         <h4>Watch Video Ad</h4>
-        <p>Watch a short video</p>
-        <div class="reward-text">+25 Shards</div>
+        <p>Earn instant rewards per video</p>
+        <span style="color:var(--accent-purple); font-size:12px; font-weight:bold;">+25 Shards</span>
       </div>
-      <button class="btn" onclick="watchAd()">Watch</button>
+      <button class="btn-sm" onclick="watchAd()">Watch Now</button>
+    </div>
+
+  </div>
+
+  <!-- PAGE 2: EARN -->
+  <div id="page-earn" class="page">
+    <div class="section-head">⚡ Daily Tasks</div>
+    
+    <div class="task-card">
+      <div class="task-info">
+        <h4>Daily Check-In</h4>
+        <p>Claim daily bonus shards</p>
+        <span style="color:var(--accent-green); font-size:12px; font-weight:bold;">+50 Shards</span>
+      </div>
+      <button class="btn-sm" id="checkInBtn" onclick="claimDaily()">Check In</button>
+    </div>
+
+    <div class="task-card">
+      <div class="task-info">
+        <h4>Watch Sponsored Ad</h4>
+        <p>Watch short sponsored clips</p>
+        <span style="color:var(--accent-purple); font-size:12px; font-weight:bold;">+25 Shards</span>
+      </div>
+      <button class="btn-sm" onclick="watchAd()">Watch</button>
     </div>
   </div>
 
-  <!-- Invite Friends -->
-  <div class="section-title">👥 Invite Friends</div>
-  <div class="card">
-    <div class="action-row">
-      <div class="action-info">
-        <h4>Invite a Friend</h4>
-        <p>Earn bonuses for every referral</p>
-        <div class="reward-text">+150 Shards / friend</div>
+  <!-- PAGE 3: REFER -->
+  <div id="page-refer" class="page">
+    <div class="section-head">👥 Referral Program</div>
+    <div class="special-card">
+      <div class="special-title">Invite Friends & Earn</div>
+      <div class="special-sub">Get <b>+150 Shards</b> for every friend that joins GigaEarn!</div>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:10px;">
+      <button class="act-btn act-btn-purple" onclick="shareTelegram()">✈️ Share to Telegram</button>
+      <button class="act-btn" style="background:#25D366;" onclick="shareWhatsApp()">💬 Share to WhatsApp</button>
+    </div>
+  </div>
+
+  <!-- PAGE 4: ACCOUNT -->
+  <div id="page-account" class="page">
+    <div class="section-head">👤 User Account</div>
+    <div class="task-card">
+      <div class="task-info">
+        <h4>Total Balance</h4>
+        <p id="accountShards">100 Shards</p>
       </div>
-      <button class="btn" onclick="inviteFriend()">Invite</button>
+      <button class="btn-sm" onclick="openWithdrawModal()">Withdraw</button>
+    </div>
+  </div>
+
+  <!-- WITHDRAWAL MODAL -->
+  <div id="withdrawModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-title">💳 Withdraw Funds</div>
+      <p style="font-size:12px; color:var(--text-muted);">Minimum withdrawal: 1,000 Shards ($0.10 USDT)</p>
+      
+      <input type="text" class="input-box" id="walletInput" placeholder="Enter TON or USDT Address">
+      
+      <div style="display:flex; gap:10px;">
+        <button class="act-btn act-btn-purple" style="flex:1;" onclick="processWithdraw()">Submit</button>
+        <button class="act-btn act-btn-dark" style="flex:1;" onclick="closeWithdrawModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAVIGATION -->
+  <div class="bottom-nav">
+    <div class="nav-item active" onclick="switchTab('home')">
+      <span class="nav-icon">🏠</span>
+      <span>Home</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('earn')">
+      <span class="nav-icon">⚡</span>
+      <span>Earn</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('home')">
+      <div class="play-tab">🎮</div>
+    </div>
+    <div class="nav-item" onclick="switchTab('refer')">
+      <span class="nav-icon">🎁</span>
+      <span>Refer</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('account')">
+      <span class="nav-icon">👤</span>
+      <span>Account</span>
     </div>
   </div>
 
@@ -164,70 +482,107 @@
     tg.ready();
     tg.expand();
 
-    // 2. Load Saved Balance or Default to 100
+    // 2. Load Shards Balance & Calculate USDT Equivalent
     let balance = parseInt(localStorage.getItem('user_balance')) || 100;
-    updateBalanceDisplay();
+    updateDisplays();
 
-    // Check if Daily Check-In was already done today
-    const lastCheckIn = localStorage.getItem('last_checkin_date');
-    const today = new Date().toDateString();
-    if (lastCheckIn === today) {
-      const checkInBtn = document.getElementById('checkInBtn');
-      if (checkInBtn) {
-        checkInBtn.innerText = "Done ✓";
-        checkInBtn.disabled = true;
-      }
-    }
-
-    // Function to update screen balance and save to local storage
-    function updateBalanceDisplay() {
-      document.getElementById('balanceDisplay').innerText = `${balance} Shards`;
+    function updateDisplays() {
+      // 100 Shards = $0.010 USDT
+      const usdtVal = (balance * 0.0001).toFixed(3);
+      
+      document.getElementById('balanceDisplay').innerText = balance;
+      document.getElementById('usdtDisplay').innerText = usdtVal;
+      document.getElementById('accountShards').innerText = `${balance} Shards ($${usdtVal} USDT)`;
       localStorage.setItem('user_balance', balance);
     }
 
-    // 3. Daily Check-in Function
+    // Tab Switcher
+    function switchTab(tabName) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+      document.getElementById(`page-${tabName}`).classList.add('active');
+    }
+
+    // Daily Check-In
+    const today = new Date().toDateString();
+    if (localStorage.getItem('last_checkin_date') === today) {
+      const btn = document.getElementById('checkInBtn');
+      if (btn) { btn.innerText = "Done ✓"; btn.disabled = true; }
+    }
+
     function claimDaily() {
       if (localStorage.getItem('last_checkin_date') === today) return;
-
       balance += 50;
-      updateBalanceDisplay();
-      
+      updateDisplays();
       localStorage.setItem('last_checkin_date', today);
       const btn = document.getElementById('checkInBtn');
       btn.innerText = "Done ✓";
       btn.disabled = true;
-
       alert("Success! You claimed +50 Shards.");
     }
 
-    // 4. Initialize Adsgram with your Block ID (39761)
+    // Special Task Function
+    function claimSpecial() {
+      balance += 150;
+      updateDisplays();
+      alert("Special Task Complete! +150 Shards added.");
+    }
+
+    // Adsgram Ad Call
     const AdController = window.Adsgram ? window.Adsgram.init({ blockId: "39761" }) : null;
 
-    // Watch Ad Function
     function watchAd() {
       if (!AdController) {
-        alert("Ad provider is still loading or unavailable. Please try again in a moment.");
+        alert("Ad network is loading or unavailable. Please try again in a moment.");
         return;
       }
-
-      AdController.show().then((result) => {
-        // Ad watched successfully
+      AdController.show().then((res) => {
         balance += 25;
-        updateBalanceDisplay();
-        alert("Awesome! You watched the ad and earned +25 Shards.");
-      }).catch((result) => {
-        // Ad skipped or failed to load
-        alert("Ad was skipped or failed to load. No reward granted.");
+        updateDisplays();
+        alert("Success! +25 Shards earned.");
+      }).catch((err) => {
+        alert("Ad was skipped or unavailable.");
       });
     }
 
-    // 5. Invite Friends Function
-    function inviteFriend() {
-      const botUsername = "Watch2EarnHub_bot";
-      const userId = tg.initDataUnsafe?.user?.id || "";
-      const shareUrl = `https://t.me/share/url?url=https://t.me/${botUsername}?start=ref_${userId}&text=${encodeURIComponent("Join GigaEarn and start earning Shards today!")}`;
-      
-      tg.openTelegramLink(shareUrl);
+    // Referral Links (Telegram & WhatsApp)
+    const botUsername = "Watch2EarnHub_bot";
+    const userId = tg.initDataUnsafe?.user?.id || "12345";
+    const refLink = `https://t.me/${botUsername}?start=ref_${userId}`;
+    const shareText = `Join GigaEarn and start earning crypto Shards with me today! ${refLink}`;
+
+    function shareTelegram() {
+      const tgShareUrl = `https://t.me/share/url?url=${encodeURIComponent(refLink)}&text=${encodeURIComponent("Join GigaEarn and start earning Shards!")}`;
+      tg.openTelegramLink(tgShareUrl);
+    }
+
+    function shareWhatsApp() {
+      const waShareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
+      window.open(waShareUrl, '_blank');
+    }
+
+    // Withdrawal Modal Handlers
+    function openWithdrawModal() {
+      document.getElementById('withdrawModal').style.display = 'flex';
+    }
+
+    function closeWithdrawModal() {
+      document.getElementById('withdrawModal').style.display = 'none';
+    }
+
+    function processWithdraw() {
+      const addr = document.getElementById('walletInput').value.trim();
+      if (!addr) {
+        alert("Please enter a valid wallet address.");
+        return;
+      }
+      if (balance < 1000) {
+        alert("Insufficient balance. Minimum withdrawal is 1,000 Shards.");
+        return;
+      }
+      alert(`Withdrawal request of ${balance} Shards submitted for wallet: ${addr}`);
+      closeWithdrawModal();
     }
   </script>
 </body>
