@@ -522,16 +522,64 @@
       if (btn) { btn.innerText = "Done ✓"; btn.disabled = true; }
     }
 
-    function claimDaily() {
-      if (localStorage.getItem('last_checkin_date') === today) return;
-      balance += 50;
-      updateDisplays();
-      localStorage.setItem('last_checkin_date', today);
-      const btn = document.getElementById('checkInBtn');
-      btn.innerText = "Done ✓";
-      btn.disabled = true;
-      alert("Success! You claimed +50 Shards.");
-    }
+    // --- 24-Hour Daily Check-In Logic ---
+const CHECKIN_COOLDOWN = 24 * 60 * 60 * 1000; // 24 Hours in milliseconds
+
+function updateDailyCheckInUI() {
+  const checkInBtn = document.getElementById('checkInBtn');
+  if (!checkInBtn) return;
+
+  const lastCheckIn = parseInt(localStorage.getItem('last_checkin_timestamp')) || 0;
+  const now = Date.now();
+  const timePassed = now - lastCheckIn;
+
+  if (timePassed < CHECKIN_COOLDOWN) {
+    // Disable button and start countdown display
+    checkInBtn.disabled = true;
+    checkInBtn.style.opacity = '0.7';
+    checkInBtn.style.background = '#334155';
+    
+    const remainingMs = CHECKIN_COOLDOWN - timePassed;
+    const hours = Math.floor(remainingMs / (1000 * 60 * 60));
+    const minutes = Math.floor((remainingMs % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((remainingMs % (1000 * 60)) / 1000);
+
+    // Format numbers to 2 digits (e.g., 08h 05m 12s)
+    const formattedTime = `${String(hours).padStart(2, '0')}h ${String(minutes).padStart(2, '0')}m ${String(seconds).padStart(2, '0')}s`;
+    
+    checkInBtn.innerText = formattedTime;
+  } else {
+    // Ready to claim!
+    checkInBtn.disabled = false;
+    checkInBtn.style.opacity = '1';
+    checkInBtn.style.background = 'linear-gradient(135deg, #3b82f6, #1d4ed8)';
+    checkInBtn.innerText = "Check In";
+  }
+}
+
+// Function triggered when user taps "Check In"
+function claimDaily() {
+  const lastCheckIn = parseInt(localStorage.getItem('last_checkin_timestamp')) || 0;
+  const now = Date.now();
+
+  if (now - lastCheckIn < CHECKIN_COOLDOWN) {
+    alert("Daily bonus is not ready yet!");
+    return;
+  }
+
+  // Grant reward & save current timestamp
+  balance += 50;
+  updateDisplays();
+  localStorage.setItem('last_checkin_timestamp', now);
+  
+  updateDailyCheckInUI();
+  alert("🎉 Success! You claimed +50 Shards. Next check-in in 24 hours!");
+}
+
+// Run timer update every 1 second
+setInterval(updateDailyCheckInUI, 1000);
+updateDailyCheckInUI(); // Run immediately on load
+
 
     // Initialize Adsgram Controllers
     // Block 39761 = Rewarded Ad (+25 Shards)
