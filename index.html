@@ -708,6 +708,43 @@ updateDailyCheckInUI(); // Run immediately on load
       alert(`Withdrawal request of ${balance} Shards submitted for wallet: ${addr}`);
       closeWithdrawModal();
     }
-  </script>
+  </script>// --- SIMPLE FRONT-END REFERRAL SYSTEM ---
+function checkReferralOnLaunch() {
+  // Check if Telegram SDK is loaded
+  if (typeof tg === 'undefined' || !tg.initDataUnsafe) return;
+
+  const startParam = tg.initDataUnsafe.start_param || "";
+  const myUserId = tg.initDataUnsafe.user?.id || "guest";
+
+  if (startParam.startsWith("ref_")) {
+    const referrerId = startParam.replace("ref_", "");
+
+    // Check 1: User cannot refer themselves
+    if (String(referrerId) === String(myUserId)) {
+      console.log("Self-referrals are not allowed.");
+      return;
+    }
+
+    // Check 2: Check if this device already claimed a referral bonus
+    const alreadyReferred = localStorage.getItem("giga_referred_already");
+
+    if (!alreadyReferred) {
+      // Lock it so it only rewards ONCE
+      localStorage.setItem("giga_referred_already", "true");
+
+      // Give +50 Shards bonus to the new user joining
+      balance = (parseInt(balance) || 0) + 50;
+      updateDisplays();
+
+      alert("🎉 Welcome! You joined via a friend's link and earned +50 bonus Shards!");
+    }
+  }
+}
+
+// Run the check as soon as the app loads
+window.addEventListener("DOMContentLoaded", () => {
+  checkReferralOnLaunch();
+});
+  
 </body>
 </html>
