@@ -523,12 +523,23 @@
       alert("Success! You claimed +50 Shards.");
     }
 
-    // Special Task Function
+        // Special Task Function (Triggers an ad before rewarding +150 Shards)
     function claimSpecial() {
-      balance += 150;
-      updateDisplays();
-      alert("Special Task Complete! +150 Shards added.");
+      if (!AdController) {
+        alert("Ad network is loading or unavailable. Please try again in a moment.");
+        return;
+      }
+
+      // Show Adsgram ad for the premium task
+      AdController.show().then((res) => {
+        balance += 150;
+        updateDisplays();
+        alert("Premium Task Complete! You earned +150 Shards.");
+      }).catch((err) => {
+        alert("Ad was skipped or failed. Task incomplete, no reward granted.");
+      });
     }
+
 
     // Adsgram Ad Call
     const AdController = window.Adsgram ? window.Adsgram.init({ blockId: "39761" }) : null;
