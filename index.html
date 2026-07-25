@@ -4,10 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GigaEarn MiniApp</title>
+  
   <!-- Telegram Web App SDK -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  
   <!-- Adsgram SDK -->
   <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
+
   <style>
     :root {
       --bg-color: #0f172a;
@@ -15,153 +18,217 @@
       --accent-green: #10b981;
       --accent-blue: #3b82f6;
       --text-main: #f8fafc;
+      --text-muted: #94a3b8;
     }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
     body {
       background-color: var(--bg-color);
       color: var(--text-main);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      margin: 0;
       padding: 16px;
-      padding-bottom: 80px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
     }
-    .header-card {
-      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-      padding: 20px;
-      border-radius: 16px;
-      text-align: center;
-      margin-bottom: 20px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-    }
-    .balance-title { font-size: 14px; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; }
-    .balance-amount { font-size: 32px; font-weight: 800; margin-top: 5px; }
-    
-    .section-title { font-size: 18px; font-weight: 700; margin: 20px 0 10px 0; }
-    
-    .task-card {
+
+    .card {
       background-color: var(--card-bg);
       border-radius: 12px;
       padding: 16px;
-      margin-bottom: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .balance-card {
+      background: linear-gradient(135deg, #4f46e5, #9333ea);
+      text-align: center;
+      padding: 24px 16px;
+    }
+
+    .balance-title {
+      font-size: 12px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      opacity: 0.8;
+    }
+
+    .balance-text {
+      font-size: 32px;
+      font-weight: bold;
+      margin-top: 4px;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .action-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
-    .task-info h4 { margin: 0 0 4px 0; font-size: 16px; }
-    .task-info p { margin: 0; font-size: 13px; color: #94a3b8; }
-    .reward-badge { color: #34d399; font-weight: 600; font-size: 13px; }
-    
+
+    .action-info h4 {
+      font-size: 15px;
+    }
+
+    .action-info p {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .reward-text {
+      color: var(--accent-green);
+      font-size: 13px;
+      font-weight: 600;
+    }
+
     .btn {
       background-color: var(--accent-blue);
       color: white;
       border: none;
-      padding: 10px 16px;
+      padding: 8px 16px;
       border-radius: 8px;
-      font-weight: 600;
+      font-weight: bold;
       font-size: 14px;
       cursor: pointer;
     }
-    .btn-success { background-color: var(--accent-green); }
-    .btn-disabled { background-color: #475569; cursor: not-allowed; }
+
+    .btn:disabled {
+      background-color: #475569;
+      color: #94a3b8;
+      cursor: not-allowed;
+    }
   </style>
 </head>
 <body>
 
-  <!-- BALANCE DISPLAY -->
-  <div class="header-card">
+  <!-- Balance Section -->
+  <div class="card balance-card">
     <div class="balance-title">Total Balance</div>
-    <div class="balance-amount"><span id="balance">0</span> Shards</div>
+    <div class="balance-text" id="balanceDisplay">100 Shards</div>
   </div>
 
-  <!-- DAILY REWARD -->
+  <!-- Daily Bonus -->
   <div class="section-title">⚡ Daily Bonus</div>
-  <div class="task-card">
-    <div class="task-info">
-      <h4>Daily Check-In</h4>
-      <div class="reward-badge">+50 Shards</div>
+  <div class="card">
+    <div class="action-row">
+      <div class="action-info">
+        <h4>Daily Check-In</h4>
+        <div class="reward-text">+50 Shards</div>
+      </div>
+      <button class="btn" id="checkInBtn" onclick="claimDaily()">Check In</button>
     </div>
-    <button id="dailyBtn" class="btn btn-success" onclick="claimDaily()">Claim</button>
   </div>
 
-  <!-- ADS SECTION -->
+  <!-- Watch & Earn -->
   <div class="section-title">🎬 Watch & Earn</div>
-  <div class="task-card">
-    <div class="task-info">
-      <h4>Watch Video Ad</h4>
-      <p>Watch a short 15s video</p>
-      <div class="reward-badge">+25 Shards</div>
+  <div class="card">
+    <div class="action-row">
+      <div class="action-info">
+        <h4>Watch Video Ad</h4>
+        <p>Watch a short video</p>
+        <div class="reward-text">+25 Shards</div>
+      </div>
+      <button class="btn" onclick="watchAd()">Watch</button>
     </div>
-    <button class="btn" onclick="watchAd()">Watch</button>
   </div>
 
-  <!-- REFERRAL SECTION -->
+  <!-- Invite Friends -->
   <div class="section-title">👥 Invite Friends</div>
-  <div class="task-card">
-    <div class="task-info">
-      <h4>Invite a Friend</h4>
-      <p>Earn bonuses for every referral</p>
-      <div class="reward-badge">+150 Shards / friend</div>
+  <div class="card">
+    <div class="action-row">
+      <div class="action-info">
+        <h4>Invite a Friend</h4>
+        <p>Earn bonuses for every referral</p>
+        <div class="reward-text">+150 Shards / friend</div>
+      </div>
+      <button class="btn" onclick="inviteFriend()">Invite</button>
     </div>
-    <button class="btn" onclick="copyReferral()">Invite</button>
   </div>
 
   <script>
+    // 1. Initialize Telegram WebApp
     const tg = window.Telegram.WebApp;
+    tg.ready();
     tg.expand();
 
-    // Balance Logic
-    let balance = parseInt(localStorage.getItem('user_balance')) || 0;
-    function updateBalance(amount) {
-      balance += amount;
-      localStorage.setItem('user_balance', balance);
-      document.getElementById('balance').innerText = balance;
-    }
-    document.getElementById('balance').innerText = balance;
+    // 2. Load Saved Balance or Default to 100
+    let balance = parseInt(localStorage.getItem('user_balance')) || 100;
+    updateBalanceDisplay();
 
-    // Daily Claim Logic
-    const lastClaim = localStorage.getItem('last_daily_claim');
+    // Check if Daily Check-In was already done today
+    const lastCheckIn = localStorage.getItem('last_checkin_date');
     const today = new Date().toDateString();
-    if (lastClaim === today) setBtnClaimed('dailyBtn');
+    if (lastCheckIn === today) {
+      const checkInBtn = document.getElementById('checkInBtn');
+      if (checkInBtn) {
+        checkInBtn.innerText = "Done ✓";
+        checkInBtn.disabled = true;
+      }
+    }
 
+    // Function to update screen balance and save to local storage
+    function updateBalanceDisplay() {
+      document.getElementById('balanceDisplay').innerText = `${balance} Shards`;
+      localStorage.setItem('user_balance', balance);
+    }
+
+    // 3. Daily Check-in Function
     function claimDaily() {
-      if (localStorage.getItem('last_daily_claim') === today) return;
-      updateBalance(50);
-      localStorage.setItem('last_daily_claim', today);
-      setBtnClaimed('dailyBtn');
-      tg.showAlert("You claimed 50 daily Shards!");
+      if (localStorage.getItem('last_checkin_date') === today) return;
+
+      balance += 50;
+      updateBalanceDisplay();
+      
+      localStorage.setItem('last_checkin_date', today);
+      const btn = document.getElementById('checkInBtn');
+      btn.innerText = "Done ✓";
+      btn.disabled = true;
+
+      alert("Success! You claimed +50 Shards.");
     }
 
-    // Adsgram Rewarded Ad
+    // 4. Initialize Adsgram with your Block ID (39761)
+    const AdController = window.Adsgram ? window.Adsgram.init({ blockId: "39761" }) : null;
+
+    // Watch Ad Function
     function watchAd() {
-      if (typeof AdController !== 'undefined') {
-        AdController.show({ blockId: "YOUR_ADSGRAM_BLOCK_ID" }).then(() => {
-          updateBalance(25);
-          tg.showAlert("Success! You earned 25 Shards.");
-        }).catch(() => {
-          tg.showAlert("Ad failed to load or was closed early.");
-        });
-      } else {
-        updateBalance(25);
-        tg.showAlert("Demo Mode: +25 Shards added!");
+      if (!AdController) {
+        alert("Ad provider is still loading or unavailable. Please try again in a moment.");
+        return;
       }
+
+      AdController.show().then((result) => {
+        // Ad watched successfully
+        balance += 25;
+        updateBalanceDisplay();
+        alert("Awesome! You watched the ad and earned +25 Shards.");
+      }).catch((result) => {
+        // Ad skipped or failed to load
+        alert("Ad was skipped or failed to load. No reward granted.");
+      });
     }
 
-    // Referral Copy Logic
-    function copyReferral() {
-      const userId = tg.initDataUnsafe?.user?.id || 'user';
-      const refLink = `https://t.me/Watch2EarnHub_bot?start=ref_${userId}`;
-      navigator.clipboard.writeText(refLink);
-      tg.showAlert("Referral link copied to clipboard!");
-    }
-
-    function setBtnClaimed(btnId) {
-      const btn = document.getElementById(btnId);
-      if (btn) {
-        btn.innerText = "Done ✓";
-        btn.classList.add('btn-disabled');
-        btn.onclick = null;
-      }
+    // 5. Invite Friends Function
+    function inviteFriend() {
+      const botUsername = "Watch2EarnHub_bot";
+      const userId = tg.initDataUnsafe?.user?.id || "";
+      const shareUrl = `https://t.me/share/url?url=https://t.me/${botUsername}?start=ref_${userId}&text=${encodeURIComponent("Join GigaEarn and start earning Shards today!")}`;
+      
+      tg.openTelegramLink(shareUrl);
     }
   </script>
 </body>
 </html>
-  
