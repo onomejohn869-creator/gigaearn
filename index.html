@@ -34,7 +34,7 @@
     body {
       background-color: var(--bg-color);
       color: var(--text-main);
-      padding: 16px 16px 90px 16px;
+      padding: 16px 16px 100px 16px;
       min-height: 100vh;
     }
 
@@ -285,27 +285,32 @@
       margin: 10px 0 16px 0;
     }
 
-    /* Bottom Navigation Bar */
+    /* FIXED Bottom Navigation Bar */
     .bottom-nav {
       position: fixed;
       bottom: 0; left: 0; right: 0;
+      height: 70px;
       background: #121325;
       border-top: 1px solid var(--card-border);
       display: flex;
-      justify-style: space-around;
+      justify-content: space-between;
       align-items: center;
-      padding: 10px 0 16px 0;
+      padding: 0 8px;
       z-index: 90;
     }
 
     .nav-item {
+      flex: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 4px;
-      font-size: 10px;
+      justify-content: center;
+      gap: 3px;
+      font-size: 11px;
+      font-weight: 600;
       color: var(--text-muted);
       cursor: pointer;
+      text-align: center;
     }
 
     .nav-item.active {
@@ -314,18 +319,19 @@
 
     .nav-icon {
       font-size: 20px;
+      line-height: 1;
     }
 
     .play-tab {
       background: linear-gradient(135deg, #f59e0b, #d97706);
-      width: 50px;
-      height: 50px;
+      width: 48px;
+      height: 48px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 24px;
-      margin-top: -25px;
+      font-size: 22px;
+      margin-top: -18px;
       box-shadow: 0 4px 15px rgba(245, 158, 11, 0.5);
     }
 
