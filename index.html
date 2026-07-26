@@ -461,19 +461,32 @@
   </div>
 
   <!-- WITHDRAWAL MODAL -->
-  <div id="withdrawModal" class="modal">
-    <div class="modal-content">
-      <div class="modal-title">💳 Withdraw Funds</div>
-      <p style="font-size:12px; color:var(--text-muted);">Minimum withdrawal: 25,000 Shards ($1.00 USDT)</p>
-      
-      <input type="text" class="input-box" id="walletInput" placeholder="Enter TON or USDT Address">
-      
-      <div style="display:flex; gap:10px;">
-        <button class="act-btn act-btn-purple" style="flex:1;" onclick="processWithdraw()">Submit</button>
-        <button class="act-btn act-btn-dark" style="flex:1;" onclick="closeWithdrawModal()">Close</button>
-      </div>
+<div id="withdrawModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:1000; padding:20px; align-items:center; justify-content:center;">
+  <div style="background:var(--card-bg, #1e293b); border:1px solid var(--card-border, #334155); border-radius:16px; padding:20px; width:100%; max-width:380px;">
+    
+    <h3 style="margin-top:0; color:#fff;">💸 Request Payout</h3>
+    <p style="font-size:12px; color:#94a3b8;">Minimum payout: <b>5,000 Shards ($5 USDT)</b></p>
+
+    <!-- Payment Method Selection -->
+    <label style="font-size:11px; color:#94a3b8;">Select Payment Method:</label>
+    <select id="payMethod" style="width:100%; padding:10px; margin:6px 0 12px; border-radius:8px; background:#0f172a; color:#fff; border:1px solid #334155;">
+      <option value="USDT (TON / TRC20)">USDT (TON or TRC-20)</option>
+      <option value="TON Coin">TON Crypto Wallet</option>
+    </select>
+
+    <!-- Wallet Address Input -->
+    <label style="font-size:11px; color:#94a3b8;">Your Wallet Address / Account Details:</label>
+    <input type="text" id="payAddress" placeholder="e.g. EQB... or T..." style="width:100%; padding:10px; margin:6px 0 16px; border-radius:8px; background:#0f172a; color:#fff; border:1px solid #334155; box-sizing:border-box;">
+
+    <!-- Action Buttons -->
+    <div style="display:flex; gap:10px;">
+      <button onclick="closeWithdrawModal()" style="flex:1; padding:12px; background:#475569; color:#fff; border:none; border-radius:8px; font-weight:bold;">Cancel</button>
+      <button id="btnSubmitWithdraw" onclick="processWithdrawal()" style="flex:1; padding:12px; background:linear-gradient(135deg,#3b82f6,#1d4ed8); color:#fff; border:none; border-radius:8px; font-weight:bold;">Submit</button>
     </div>
+
   </div>
+</div>
+
 
   <!-- BOTTOM NAVIGATION -->
   <div class="bottom-nav">
@@ -744,7 +757,80 @@ function checkReferralOnLaunch() {
 // Run the check as soon as the app loads
 window.addEventListener("DOMContentLoaded", () => {
   checkReferralOnLaunch();
-    });
+    }); 
+
+
+    // MINIMUM SHARDS REQUIRED FOR $5 PAYOUT
+const MIN_WITHDRAW_SHARDS = 5000; 
+
+function processWithdrawal() {
+  const submitBtn = document.getElementById('btnSubmitWithdraw');
+  const method = document.getElementById('payMethod').value;
+  const address = document.getElementById('payAddress').value.trim();
+
+  // ERROR CHECK 1: Ensure Minimum Balance
+  if (balance < MIN_WITHDRAW_SHARDS) {
+    alert(`⚠️ You need at least ${MIN_WITHDRAW_SHARDS} Shards to withdraw! Your current balance is ${balance} Shards.`);
+    return;
+  }
+
+  // ERROR CHECK 2: Prevent Blank Address
+  if (!address || address.length < 10) {
+    alert("⚠️ Please enter a valid, complete wallet address!");
+    return;
+  }
+
+  // Prevent double-clicking the button
+  submitBtn.disabled = true;
+  submitBtn.innerText = "Processing...";
+
+  // Get User Telegram Details
+  const user = tg.initDataUnsafe?.user || {};
+  const userId = user.id || "Unknown_ID";
+  const username = user.username ? `@${user.username}` : "No Username";
+
+  // Build Notification Message for Admin (You)
+  const alertText = `🚨 *NEW WITHDRAWAL REQUEST* 🚨\n\n` +
+    `👤 *User:* ${username} (ID: \`${userId}\`)\n` +
+    `💰 *Amount:* ${balance} Shards\n` +
+    `💳 *Method:* ${method}\n` +
+    `📍 *Address:* \`${address}\``;
+
+  // Send message directly to your Telegram using Bot API
+  const BOT_TOKEN = "YOUR_BOT_TOKEN_HERE"; // Paste your BotFather Token
+  const ADMIN_CHAT_ID = "YOUR_TELEGRAM_USER_ID_HERE"; // Your personal Telegram User ID
+
+  fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      chat_id: ADMIN_CHAT_ID,
+      text: alertText,
+      parse_mode: 'Markdown'
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.ok) {
+      // Deduct balance locally & reset display
+      balance = 0;
+      updateDisplays();
+
+      alert("✅ Withdrawal request submitted successfully! Payment will be processed after admin review.");
+      closeWithdrawModal();
+    } else {
+      alert("❌ Something went wrong sending request. Please try again later.");
+    }
+  })
+  .catch(err => {
+    alert("Network error! Please check your internet connection.");
+  })
+  .finally(() => {
+    submitBtn.disabled = false;
+    submitBtn.innerText = "Submit";
+  });
+        }
+    
   </script>
 </body>
 </html>
