@@ -760,45 +760,47 @@ window.addEventListener("DOMContentLoaded", () => {
     }); 
 
 
-    // MINIMUM SHARDS REQUIRED FOR $5 PAYOUT
-const MIN_WITHDRAW_SHARDS = 5000; 
+    // --- FIXED WITHDRAWAL SYSTEM ---
+// Based on 10,700 Shards = $0.428 USDT (1 USDT = 25,000 Shards)
+const SHARD_RATE = 0.00004; // $0.00004 per Shard
+const MIN_WITHDRAW_USDT = 1.0; // Minimum $1 payout (25,000 Shards)
 
 function processWithdrawal() {
   const submitBtn = document.getElementById('btnSubmitWithdraw');
   const method = document.getElementById('payMethod').value;
   const address = document.getElementById('payAddress').value.trim();
 
-  // ERROR CHECK 1: Ensure Minimum Balance
-  if (balance < MIN_WITHDRAW_SHARDS) {
-    alert(`⚠️ You need at least ${MIN_WITHDRAW_SHARDS} Shards to withdraw! Your current balance is ${balance} Shards.`);
+  const userUsdtValue = (balance * SHARD_RATE).toFixed(3);
+  const minShardsNeeded = MIN_WITHDRAW_USDT / SHARD_RATE; // 25,000 Shards
+
+  // Check Minimum Balance ($1 / 25,000 Shards)
+  if (balance < minShardsNeeded) {
+    alert(`⚠️ Minimum withdrawal is $${MIN_WITHDRAW_USDT} USDT (${minShardsNeeded.toLocaleString()} Shards). Your current balance is $${userUsdtValue} USDT.`);
     return;
   }
 
-  // ERROR CHECK 2: Prevent Blank Address
+  // Check Address Input
   if (!address || address.length < 10) {
-    alert("⚠️ Please enter a valid, complete wallet address!");
+    alert("⚠️ Please enter a valid wallet address!");
     return;
   }
 
-  // Prevent double-clicking the button
   submitBtn.disabled = true;
   submitBtn.innerText = "Processing...";
 
-  // Get User Telegram Details
   const user = tg.initDataUnsafe?.user || {};
   const userId = user.id || "Unknown_ID";
   const username = user.username ? `@${user.username}` : "No Username";
 
-  // Build Notification Message for Admin (You)
   const alertText = `🚨 *NEW WITHDRAWAL REQUEST* 🚨\n\n` +
     `👤 *User:* ${username} (ID: \`${userId}\`)\n` +
-    `💰 *Amount:* ${balance} Shards\n` +
+    `💰 *Amount:* ${balance} Shards (~$${userUsdtValue} USDT)\n` +
     `💳 *Method:* ${method}\n` +
     `📍 *Address:* \`${address}\``;
 
-  // Send message directly to your Telegram using Bot API
-  const BOT_TOKEN = "YOUR_BOT_TOKEN_HERE"; // Paste your BotFather Token
-  const ADMIN_CHAT_ID = "YOUR_TELEGRAM_USER_ID_HERE"; // Your personal Telegram User ID
+  // REPLACE THESE TWO LINES WITH YOUR REAL CREDENTIALS:
+  const BOT_TOKEN = "8695348773:AAFzzc66ST1miqOuzezX-0eBfOXahPigP_A";
+  const ADMIN_CHAT_ID = "8695348773";
 
   fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
     method: 'POST',
@@ -812,24 +814,23 @@ function processWithdrawal() {
   .then(res => res.json())
   .then(data => {
     if (data.ok) {
-      // Deduct balance locally & reset display
       balance = 0;
       updateDisplays();
-
-      alert("✅ Withdrawal request submitted successfully! Payment will be processed after admin review.");
+      alert("✅ Withdrawal request submitted! Payment will be processed shortly.");
       closeWithdrawModal();
     } else {
-      alert("❌ Something went wrong sending request. Please try again later.");
+      alert("❌ Error sending request. Please check your Bot Token & Admin ID.");
     }
   })
-  .catch(err => {
+  .catch(() => {
     alert("Network error! Please check your internet connection.");
   })
   .finally(() => {
     submitBtn.disabled = false;
     submitBtn.innerText = "Submit";
   });
-        }
+}
+
     
   </script>
 </body>
